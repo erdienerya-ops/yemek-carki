@@ -21,7 +21,7 @@ canvas{width:100%;display:block}
 .pin{position:absolute;top:0;left:50%;transform:translateX(-50%);color:#fff;font-size:30px;z-index:2}
 button{cursor:pointer;font:inherit;border:0;border-radius:12px;padding:12px;font-weight:700}
 .primary{background:linear-gradient(110deg,#ffba74,#ff7485);color:#241828}
-.primary:disabled{opacity:.45}
+.primary:disabled,button:disabled{opacity:.45;cursor:not-allowed}
 .full{width:100%}
 .small{font-size:12px;padding:9px}
 h2{font-size:18px;margin:0 0 15px}
@@ -33,12 +33,16 @@ input{background:#111526;border:1px solid #454960;border-radius:10px;padding:13p
 .food{display:flex;align-items:center;gap:10px;border-bottom:1px solid #ffffff15;padding:11px 0}
 .foodname{flex:1;overflow-wrap:anywhere}
 .food button{background:#ffae8020;color:#ffc18f;border:1px solid #ffae8060}
+.food .remove{color:#ff9ca6;border-color:#ff9ca660;background:#ff6b7c15}
 .bar{height:5px;background:#ffffff18;border-radius:5px;margin-top:7px;overflow:hidden}
 .bar i{display:block;height:100%;background:#ff9b7c}
 .muted{color:#aab0c6;font-size:13px}
 #status,#msg{font-size:12px;color:#c4c9d9}
+#msg{min-height:20px}
 #uid{font-size:11px;overflow-wrap:anywhere;color:#ffbf8c}
 #history{font-size:13px;line-height:2;color:#c4c9d9}
+#admin{display:none}
+#admin button{margin-top:10px;background:#6c4154;color:#fff;border:1px solid #a56b7d}
 footer{text-align:center;margin-top:25px;color:#9399b0;font-size:12px}
 @media(max-width:700px){.grid{grid-template-columns:1fr}.card{padding:16px}}
 </style>
@@ -87,20 +91,26 @@ footer{text-align:center;margin-top:25px;color:#9399b0;font-size:12px}
 <p class="muted">Öneriler herkesin listesinde görünür.</p>
 </section>
 
+<section class="card" id="admin">
+<h2>🛡️ Yönetici Paneli</h2>
+<p class="muted">Yemekleri listeden silebilir ve günlük oyları sıfırlayabilirsin.</p>
+<button id="reset" class="full">Günün Oylarını Sıfırla</button>
+</section>
+
 <section class="card">
 <h2>🕘 Son Seçimler</h2>
 <div id="history">Henüz seçim yapılmadı.</div>
 </section>
 </aside>
 </div>
-<p id="msg"></p>
+<p id="msg" role="status"></p>
 <footer>Afiyet olsun ❤️ • Ortak Yemek Çarkı</footer>
 </main>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInAnonymously,signInWithPopup,GoogleAuthProvider} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import {getFirestore,doc,collection,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import {getFirestore,doc,collection,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit,getDocs,writeBatch} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const config={
 apiKey:"AIzaSyB_zZfGiWc9VWZGTVjrPd8sWbLqGvc-HUo",
@@ -111,182 +121,447 @@ messagingSenderId:"584547323621",
 appId:"1:584547323621:web:55c378c10c3ce65fc30e0c"
 };
 
+const ADMIN_UID="RQoT8LjzGnbmug1eSKBbw8dlztF3";
+
 const app=initializeApp(config);
 const auth=getAuth(app);
 const db=getFirestore(app);
 const $=id=>document.getElementById(id);
-const defaults=["Lahmacun","Döner","Mantı","Köfte","Pide","Tavuk Pilav","Kuru Fasulye","İskender","Makarna","Çorba"];
-const colors=["#fa8778","#f6b76b","#5b9ba9","#8275b9","#55a28d","#c57c9b"];
-const day=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-const dayRef=doc(db,"days",day);
-let user=null,foods=[],votes={},myVote=null,rotation=0,busy=false;
-let listeners=[];
-const canvas=$("wheel"),ctx=canvas.getContext("2d");
-const TAU=Math.PI*2;
-$("date").textContent=new Intl.DateTimeFormat("tr-TR",{dateStyle:"full",timeZone:"Europe/Istanbul"}).format(new Date());
 
-function message(s){$("msg").textContent=s}
+const defaults=[
+"Lahmacun","Döner","Mantı","Köfte","Pide",
+"Tavuk Pilav","Kuru Fasulye","İskender",
+"Makarna","Çorba"
+];
+
+const colors=[
+"#fa8778","#f6b76b","#5b9ba9",
+"#8275b9","#55a28d","#c57c9b"
+];
+
+const day=new Intl.DateTimeFormat("en-CA",{
+timeZone:"Europe/Istanbul",
+year:"numeric",
+month:"2-digit",
+day:"2-digit"
+}).format(new Date());
+
+const dayRef=doc(db,"days",day);
+const ballotsRef=collection(db,"days",day,"ballots");
+const spinsRef=collection(db,"days",day,"spins");
+
+let user=null;
+let foods=[];
+let votes={};
+let ballots=[];
+let myVote=null;
+let rotation=0;
+let busy=false;
+let ready=false;
+let unsubs=[];
+
+const canvas=$("wheel");
+const ctx=canvas.getContext("2d");
+const TAU=Math.PI*2;
+
+$("date").textContent=new Intl.DateTimeFormat("tr-TR",{
+dateStyle:"full",
+timeZone:"Europe/Istanbul"
+}).format(new Date());
+
+const isAdmin=()=>user?.uid===ADMIN_UID&&!user.isAnonymous;
+
+function message(s){
+$("msg").textContent=s;
+}
 
 function draw(){
-const n=foods.length||1,c=350,r=333;
+const n=foods.length||1;
+const c=350,r=333;
+
 ctx.clearRect(0,0,700,700);
-ctx.beginPath();ctx.arc(c,c,345,0,TAU);
-ctx.fillStyle="#111526";ctx.fill();
+ctx.beginPath();
+ctx.arc(c,c,345,0,TAU);
+ctx.fillStyle="#111526";
+ctx.fill();
+
 foods.forEach((name,i)=>{
-const a=rotation+i*TAU/n,step=TAU/n;
-ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,r,a,a+step);ctx.closePath();
-ctx.fillStyle=colors[i%colors.length];ctx.fill();
-ctx.strokeStyle="#ffffff66";ctx.lineWidth=2;ctx.stroke();
-ctx.save();ctx.translate(c,c);ctx.rotate(a+step/2);
-ctx.fillStyle="white";ctx.textAlign="right";ctx.textBaseline="middle";
+const a=rotation+i*TAU/n;
+const step=TAU/n;
+
+ctx.beginPath();
+ctx.moveTo(c,c);
+ctx.arc(c,c,r,a,a+step);
+ctx.closePath();
+ctx.fillStyle=colors[i%colors.length];
+ctx.fill();
+ctx.strokeStyle="#ffffff66";
+ctx.lineWidth=2;
+ctx.stroke();
+
+ctx.save();
+ctx.translate(c,c);
+ctx.rotate(a+step/2);
+ctx.fillStyle="white";
+ctx.textAlign="right";
+ctx.textBaseline="middle";
 ctx.font=`bold ${n>15?17:22}px system-ui`;
 ctx.fillText(name,310,0,215);
 ctx.restore();
 });
-ctx.beginPath();ctx.arc(c,c,35,0,TAU);
-ctx.fillStyle="#fff";ctx.fill();
-ctx.beginPath();ctx.arc(c,c,23,0,TAU);
-ctx.fillStyle="#f29a79";ctx.fill();
+
+ctx.beginPath();
+ctx.arc(c,c,35,0,TAU);
+ctx.fillStyle="#fff";
+ctx.fill();
+
+ctx.beginPath();
+ctx.arc(c,c,23,0,TAU);
+ctx.fillStyle="#f29a79";
+ctx.fill();
 }
 
 function render(){
 draw();
+
 const total=Object.values(votes).reduce((a,b)=>a+b,0);
 $("foods").replaceChildren();
+
 foods.forEach(name=>{
 const count=votes[name]||0;
-const row=document.createElement("div");row.className="food";
-const info=document.createElement("div");info.className="foodname";
+const row=document.createElement("div");
+const info=document.createElement("div");
 const label=document.createElement("div");
-label.textContent=`${name} · ${count} oy`;
-const bar=document.createElement("div");bar.className="bar";
+const bar=document.createElement("div");
 const fill=document.createElement("i");
-fill.style.width=(total?count/total*100:0)+"%";
-bar.append(fill);info.append(label,bar);
 const button=document.createElement("button");
+
+row.className="food";
+info.className="foodname";
+label.textContent=`${name} · ${count} oy`;
+bar.className="bar";
+fill.style.width=(total?count/total*100:0)+"%";
+
+bar.append(fill);
+info.append(label,bar);
+
 button.textContent=myVote===name?"✓ Oyum":"Oy ver";
-button.disabled=!user||!!myVote;
+button.disabled=!user||!!myVote||busy||!ready;
 button.onclick=()=>castVote(name);
-row.append(info,button);$("foods").append(row);
+row.append(info,button);
+
+if(isAdmin()){
+const del=document.createElement("button");
+del.className="remove";
+del.textContent="Sil";
+del.disabled=busy||!ready;
+del.onclick=()=>removeFood(name);
+row.append(del);
+}
+
+$("foods").append(row);
 });
-$("summary").textContent=`${total} toplam oy`+(myVote?` · Senin oyun: ${myVote}`:"");
-$("spin").disabled=!user||foods.length<2||busy;
-$("add").disabled=!user||busy;
+
+$("summary").textContent=
+`${total} toplam oy`+
+(myVote?` · Senin oyun: ${myVote}`:"");
+
+$("spin").disabled=
+!isAdmin()||foods.length<2||busy||!ready;
+
+$("spin").textContent=isAdmin()
+?"✦ ÇARKI ÇEVİR"
+:"🔒 Çarkı yönetici çevirir";
+
+$("add").disabled=!user||busy||!ready;
+$("reset").disabled=busy||!ready;
+$("admin").style.display=isAdmin()?"block":"none";
 }
 
 async function initializeDay(){
 await runTransaction(db,async tx=>{
 const snap=await tx.get(dayRef);
-if(!snap.exists())tx.set(dayRef,{
-foods:defaults,votes:{},result:null,createdAt:serverTimestamp()
+
+if(!snap.exists()){
+tx.set(dayRef,{
+foods:defaults,
+votes:{},
+result:null,
+createdAt:serverTimestamp()
 });
+}
 });
 }
 
+function stopWatch(){
+unsubs.forEach(fn=>fn());
+unsubs=[];
+}
+
 function watch(){
-listeners.forEach(fn=>fn());listeners=[];
-listeners.push(onSnapshot(dayRef,s=>{
+stopWatch();
+
+unsubs.push(onSnapshot(dayRef,s=>{
 const d=s.data()||{};
 foods=d.foods||[];
-votes=d.votes||{};
 $("result").textContent=d.result||"Henüz seçilmedi";
 render();
-},e=>message("Veri hatası: "+e.message)));
+},e=>message("Liste hatası: "+e.message)));
 
-listeners.push(onSnapshot(doc(db,"days",day,"ballots",user.uid),s=>{
-myVote=s.exists()?s.data().food:null;render();
+unsubs.push(onSnapshot(ballotsRef,s=>{
+ballots=s.docs.map(d=>({id:d.id,...d.data()}));
+votes={};
+
+ballots.forEach(b=>{
+if(typeof b.food==="string"){
+votes[b.food]=(votes[b.food]||0)+1;
+}
+});
+
+myVote=ballots.find(b=>b.id===user?.uid)?.food||null;
+render();
 },e=>message("Oy hatası: "+e.message)));
 
-listeners.push(onSnapshot(query(collection(db,"days",day,"spins"),orderBy("createdAt","desc"),limit(5)),s=>{
+unsubs.push(onSnapshot(
+query(spinsRef,orderBy("createdAt","desc"),limit(5)),
+s=>{
 $("history").replaceChildren();
-if(s.empty)$("history").textContent="Henüz seçim yapılmadı.";
+
+if(s.empty){
+$("history").textContent="Henüz seçim yapılmadı.";
+}
+
 s.docs.forEach((d,i)=>{
 const div=document.createElement("div");
 div.textContent=(i+1)+". "+d.data().food;
 $("history").append(div);
 });
-},e=>message("Geçmiş hatası: "+e.message)));
+},
+e=>message("Geçmiş hatası: "+e.message)
+));
 }
 
 $("add").onclick=async()=>{
 const name=$("foodInput").value.trim();
-if(!name||name.length>30||busy)return;
-busy=true;render();
+
+if(!name||name.length>30||busy||!ready)return;
+
+busy=true;
+render();
+
 try{
 await runTransaction(db,async tx=>{
 const s=await tx.get(dayRef);
 const list=s.data()?.foods||[];
+
 if(list.length>=30)throw Error("Liste dolu.");
-if(list.some(x=>x.toLocaleLowerCase("tr")===name.toLocaleLowerCase("tr")))throw Error("Bu yemek zaten var.");
+
+if(list.some(x=>
+x.toLocaleLowerCase("tr")===
+name.toLocaleLowerCase("tr")
+)){
+throw Error("Bu yemek zaten var.");
+}
+
 tx.update(dayRef,{foods:[...list,name]});
 });
+
 $("foodInput").value="";
 message("Yemek eklendi.");
-}catch(e){message(e.message)}
-finally{busy=false;render()}
+}catch(e){
+message("Ekleme hatası: "+e.message);
+}finally{
+busy=false;
+render();
+}
 };
 
 async function castVote(food){
-if(!user)return;
+if(!user||myVote||busy||!ready)return;
+
+busy=true;
+render();
+
 try{
-const ballot=doc(db,"days",day,"ballots",user.uid);
+const ballot=doc(ballotsRef,user.uid);
+
 await runTransaction(db,async tx=>{
 const b=await tx.get(ballot);
 const s=await tx.get(dayRef);
-if(b.exists())throw Error("Bugün oy kullandın.");
-const d=s.data();
-if(!d?.foods?.includes(food))throw Error("Yemek bulunamadı.");
-const counts={...d.votes};
-counts[food]=(counts[food]||0)+1;
-tx.set(ballot,{food,createdAt:serverTimestamp()});
-tx.update(dayRef,{votes:counts});
-});
-message("Oyun kaydedildi!");
-}catch(e){message(e.message)}
+
+if(b.exists()){
+throw Error("Bugün oy kullandın.");
 }
 
-$("spin").onclick=async()=>{
-if(busy||foods.length<2)return;
-busy=true;render();
-const start=rotation;
-const distance=(6+Math.random()*3)*TAU+Math.random()*TAU;
-await new Promise(resolve=>{
-let t0=null;
-function frame(t){
-if(t0===null)t0=t;
-const k=Math.min((t-t0)/4000,1);
-rotation=start+distance*(1-Math.pow(1-k,4));
-draw();
-if(k<1)requestAnimationFrame(frame);
-else resolve();
+if(!s.data()?.foods?.includes(food)){
+throw Error("Yemek bulunamadı.");
 }
-requestAnimationFrame(frame);
+
+tx.set(ballot,{
+food,
+createdAt:serverTimestamp()
 });
-const step=TAU/foods.length;
-const angle=((-Math.PI/2-rotation)%TAU+TAU)%TAU;
-const selected=foods[Math.floor(angle/step)%foods.length];
+});
+
+message("Oyun kaydedildi!");
+}catch(e){
+message("Oy hatası: "+e.message);
+}finally{
+busy=false;
+render();
+}
+}
+
+async function removeFood(name){
+if(
+!isAdmin()||busy||!ready||
+!confirm(`“${name}” listeden silinsin mi?`)
+)return;
+
+busy=true;
+render();
+
 try{
 await runTransaction(db,async tx=>{
 const s=await tx.get(dayRef);
-if(!s.data()?.foods?.includes(selected))throw Error("Liste değişti.");
-const ref=doc(collection(db,"days",day,"spins"));
-tx.update(dayRef,{result:selected,updatedAt:serverTimestamp()});
-tx.set(ref,{food:selected,by:user.uid,createdAt:serverTimestamp()});
+const list=s.data()?.foods||[];
+
+if(list.length<=2){
+throw Error("Listede en az 2 yemek kalmalı.");
+}
+
+if(!list.includes(name)){
+throw Error("Yemek bulunamadı.");
+}
+
+tx.update(dayRef,{
+foods:list.filter(x=>x!==name)
 });
-message("Ortak seçim: "+selected);
-}catch(e){message(e.message)}
-finally{busy=false;render()}
+});
+
+message("Yemek silindi. Eski oy kayıtları korunur.");
+}catch(e){
+message("Silme hatası: "+e.message);
+}finally{
+busy=false;
+render();
+}
+}
+
+$("reset").onclick=async()=>{
+if(
+!isAdmin()||busy||!ready||
+!confirm("Bugünkü TÜM oylar silinsin mi? Bu işlem geri alınamaz.")
+)return;
+
+busy=true;
+render();
+
+try{
+let count=0;
+
+while(true){
+const snap=await getDocs(
+query(ballotsRef,limit(400))
+);
+
+if(snap.empty)break;
+
+const batch=writeBatch(db);
+
+snap.docs.forEach(d=>{
+batch.delete(d.ref);
+});
+
+await batch.commit();
+count+=snap.size;
+}
+
+message(`${count} oy silindi. Herkes yeniden oy verebilir.`);
+}catch(e){
+message("Sıfırlama hatası: "+e.message);
+}finally{
+busy=false;
+render();
+}
 };
 
-// GOOGLE GİRİŞİ - GÜNCELLENDİ
+$("spin").onclick=async()=>{
+if(!isAdmin()||busy||foods.length<2||!ready)return;
+
+busy=true;
+render();
+
+const start=rotation;
+const distance=(6+Math.random()*3)*TAU+
+Math.random()*TAU;
+
+await new Promise(resolve=>{
+let t0=null;
+
+function frame(t){
+if(t0===null)t0=t;
+
+const k=Math.min((t-t0)/4000,1);
+
+rotation=start+
+distance*(1-Math.pow(1-k,4));
+
+draw();
+
+if(k<1){
+requestAnimationFrame(frame);
+}else{
+resolve();
+}
+}
+
+requestAnimationFrame(frame);
+});
+
+const step=TAU/foods.length;
+const angle=((-Math.PI/2-rotation)%TAU+TAU)%TAU;
+const selected=foods[Math.floor(angle/step)%foods.length];
+
+try{
+await runTransaction(db,async tx=>{
+const s=await tx.get(dayRef);
+
+if(!s.data()?.foods?.includes(selected)){
+throw Error("Liste değişti. Tekrar çevir.");
+}
+
+const ref=doc(spinsRef);
+
+tx.update(dayRef,{
+result:selected,
+updatedAt:serverTimestamp()
+});
+
+tx.set(ref,{
+food:selected,
+by:user.uid,
+createdAt:serverTimestamp()
+});
+});
+
+message("Ortak seçim: "+selected);
+}catch(e){
+message("Çark hatası: "+e.message);
+}finally{
+busy=false;
+render();
+}
+};
+
 $("login").onclick=async()=>{
 const button=$("login");
 button.disabled=true;
 button.textContent="Giriş yapılıyor...";
+
 try{
 message("Google hesabı açılıyor...");
-const provider=new GoogleAuthProvider();
-await signInWithPopup(auth,provider);
+await signInWithPopup(auth,new GoogleAuthProvider());
 message("Google hesabıyla giriş başarılı!");
 }catch(e){
 message("Google giriş hatası: "+e.code+" - "+e.message);
@@ -297,24 +572,45 @@ button.textContent="Google ile giriş";
 };
 
 onAuthStateChanged(auth,async u=>{
+stopWatch();
+ready=false;
+user=u;
+myVote=null;
+ballots=[];
+votes={};
+
 if(!u){
-user=null;
 $("status").textContent="Misafir girişi yapılıyor...";
-try{await signInAnonymously(auth)}
-catch(e){message("Giriş hatası: "+e.message)}
+
+try{
+await signInAnonymously(auth);
+}catch(e){
+message("Giriş hatası: "+e.message);
+}
 return;
 }
-user=u;myVote=null;
-$("status").textContent=u.isAnonymous?"🟢 Misafir bağlı":"🟢 Google bağlı";
+
+$("status").textContent=u.isAnonymous
+?"🟢 Misafir bağlı"
+:isAdmin()
+?"🛡️ Yönetici bağlı"
+:"🟢 Google bağlı";
+
 $("uid").textContent=u.isAnonymous?"":"UID: "+u.uid;
-$("login").style.display=u.isAnonymous?"inline-block":"none";
+
+$("login").style.display=u.isAnonymous
+?"inline-block":"none";
+
 try{
 await initializeDay();
+ready=true;
 watch();
 message("Bağlantı hazır.");
 }catch(e){
 message("Firebase erişim hatası: "+e.message);
 }
+
+render();
 });
 
 draw();
