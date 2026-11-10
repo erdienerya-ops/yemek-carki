@@ -3,125 +3,521 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Öğle Yemeği Çarkı</title>
+<meta name="theme-color" content="#17142e">
+<title>Öğle Yemeği Çarkı 🎡</title>
 <style>
-:root{font-family:system-ui,sans-serif;color:#fff;background:#101322}
+:root{
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:#fff;
+  background:#17142e;
+}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(circle at top,#30244d,#101322 65%);min-height:100vh}
-main{max-width:900px;margin:auto;padding:22px 15px}
-header{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.logo{font-weight:900;font-size:19px}
-h1{text-align:center;font-size:clamp(32px,7vw,55px);margin:38px 0 8px}
-h1 span{color:#ffae80}
-.sub{text-align:center;color:#abb0c7;margin-bottom:30px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}
-.card{background:#202439;border:1px solid #ffffff18;border-radius:23px;padding:20px;box-shadow:0 15px 35px #0003}
-.wheelbox{position:relative}
-canvas{width:100%;display:block}
-.pin{position:absolute;top:0;left:50%;transform:translateX(-50%);color:#fff;font-size:30px;z-index:2}
-button{cursor:pointer;font:inherit;border:0;border-radius:12px;padding:12px;font-weight:700}
-.primary{background:linear-gradient(110deg,#ffba74,#ff7485);color:#241828}
-button:disabled{opacity:.45;cursor:not-allowed}
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 5% 0%,#663ca0 0%,transparent 38%),
+    radial-gradient(ellipse at 100% 18%,#a33e80 0%,transparent 35%),
+    radial-gradient(ellipse at 50% 100%,#253a62 0%,transparent 55%),
+    #17142e;
+  background-attachment:fixed;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.15;
+  background-image:radial-gradient(#fff 1px,transparent 1px);
+  background-size:30px 30px;
+}
+main{
+  position:relative;
+  max-width:1080px;
+  margin:auto;
+  padding:18px 16px 35px;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:15px 18px;
+  background:#ffffff13;
+  border:1px solid #ffffff29;
+  border-radius:22px;
+  backdrop-filter:blur(14px);
+}
+.logo{
+  font-weight:900;
+  font-size:clamp(17px,4vw,23px);
+  letter-spacing:-.5px;
+}
+.login-area{text-align:right}
+#status{
+  font-size:12px;
+  color:#e7e1f5;
+  margin-bottom:6px;
+}
+#uid{
+  font-size:10px;
+  color:#ffdfa5;
+  max-width:220px;
+  overflow-wrap:anywhere;
+  margin-top:5px;
+}
+.hero{
+  text-align:center;
+  padding:35px 0 27px;
+}
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:9px 15px;
+  border-radius:99px;
+  background:#ffcb7830;
+  border:1px solid #ffcf8970;
+  color:#ffe3ab;
+  font-size:12px;
+  font-weight:800;
+}
+h1{
+  font-size:clamp(37px,8vw,68px);
+  line-height:1.1;
+  letter-spacing:-2px;
+  margin:17px 0 11px;
+}
+h1 span{
+  background:linear-gradient(100deg,#ffe078,#ff91ad,#d6b5ff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.sub{
+  color:#ddd5ed;
+  font-size:clamp(14px,3vw,17px);
+  margin:0;
+}
+.grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);
+  gap:20px;
+  align-items:start;
+}
+.card{
+  background:linear-gradient(145deg,#ffffff1c,#ffffff0c);
+  border:1px solid #ffffff2c;
+  border-radius:27px;
+  padding:22px;
+  box-shadow:0 15px 45px #05071648;
+  backdrop-filter:blur(12px);
+}
+.wheel-card{
+  position:sticky;
+  top:18px;
+  overflow:hidden;
+}
+.wheel-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+}
+.wheel-title h2{margin:0}
+.tag{
+  background:#ffffff19;
+  border:1px solid #ffffff25;
+  border-radius:99px;
+  padding:7px 10px;
+  font-size:11px;
+  color:#f5e3ff;
+  white-space:nowrap;
+}
+.wheelbox{
+  position:relative;
+  max-width:520px;
+  margin:auto;
+  filter:drop-shadow(0 13px 24px #0006);
+}
+canvas{
+  width:100%;
+  aspect-ratio:1;
+  display:block;
+}
+.pin{
+  position:absolute;
+  top:-9px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:39px;
+  color:#ffe079;
+  text-shadow:0 3px 8px #0009;
+  z-index:2;
+}
+button{
+  cursor:pointer;
+  font:inherit;
+  border:0;
+  border-radius:15px;
+  padding:13px;
+  font-weight:800;
+  transition:transform .16s,filter .16s;
+}
+button:not(:disabled):active{transform:scale(.97)}
+button:not(:disabled):hover{filter:brightness(1.08)}
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+.primary{
+  background:linear-gradient(110deg,#ffe47c,#ff9d70 55%,#ff79a7);
+  color:#39213b;
+  box-shadow:0 7px 23px #ff8b8b48;
+}
 .full{width:100%}
-.small{font-size:12px;padding:9px}
-h2{font-size:18px;margin:0 0 15px}
-.result{text-align:center;background:#ffffff0b;border-radius:14px;padding:15px;margin-top:15px}
-.result strong{display:block;font-size:25px;color:#ffbd86;margin-top:7px}
-aside{display:grid;gap:17px;align-content:start}
-input{background:#111526;border:1px solid #454960;border-radius:10px;padding:13px;color:white;width:100%;min-width:0;font:inherit}
-.add{display:flex;gap:8px}
-.food{display:flex;align-items:center;gap:10px;border-bottom:1px solid #ffffff15;padding:11px 0}
-.foodname{flex:1;overflow-wrap:anywhere}
-.food button{background:#ffae8020;color:#ffc18f;border:1px solid #ffae8060}
-.food .remove{color:#ff9ca6;border-color:#ff9ca660;background:#ff6b7c15}
-.bar{height:5px;background:#ffffff18;border-radius:5px;margin-top:7px;overflow:hidden}
-.bar i{display:block;height:100%;background:#ff9b7c}
-.muted{color:#aab0c6;font-size:13px}
-#status,#msg{font-size:12px;color:#c4c9d9}
-#msg{min-height:20px}
-#uid{font-size:11px;overflow-wrap:anywhere;color:#ffbf8c}
-#history{font-size:13px;line-height:2;color:#c4c9d9}
-#admin{display:none}
-#admin button{margin-top:10px;background:#6c4154;color:#fff;border:1px solid #a56b7d}
-footer{text-align:center;margin-top:25px;color:#9399b0;font-size:12px}
-@media(max-width:700px){.grid{grid-template-columns:1fr}.card{padding:16px}}
+.small{
+  font-size:12px;
+  padding:10px 12px;
+}
+#spin{
+  margin-top:9px;
+  min-height:56px;
+  font-size:16px;
+  letter-spacing:.5px;
+}
+#spin:not(:disabled){
+  animation:glow 3s ease-in-out infinite;
+}
+@keyframes glow{
+  0%,100%{box-shadow:0 7px 23px #ff8b8b48}
+  50%{box-shadow:0 8px 30px #ffcf77a0}
+}
+.result{
+  text-align:center;
+  margin-top:17px;
+  padding:19px 13px;
+  border-radius:20px;
+  border:1px solid #ffd69a65;
+  background:linear-gradient(125deg,#ffc47633,#e979b62a);
+}
+.result .eyebrow{
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:1.5px;
+  color:#ffe4b4;
+}
+.result strong{
+  display:block;
+  font-size:clamp(25px,5vw,36px);
+  margin-top:9px;
+  color:#ffe49b;
+  overflow-wrap:anywhere;
+}
+.result.celebrate{
+  animation:celebrate .65s ease;
+}
+@keyframes celebrate{
+  0%{transform:scale(.95)}
+  50%{transform:scale(1.035)}
+  100%{transform:scale(1)}
+}
+aside{
+  display:grid;
+  gap:18px;
+  align-content:start;
+}
+h2{
+  font-size:19px;
+  letter-spacing:-.3px;
+  margin:0 0 15px;
+}
+.section-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.section-heading h2{margin-bottom:9px}
+.muted{
+  color:#cfc8e3;
+  font-size:13px;
+  line-height:1.5;
+}
+#date{
+  margin-bottom:12px;
+  text-transform:capitalize;
+}
+.food{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  border:1px solid #ffffff1b;
+  border-radius:15px;
+  padding:11px;
+  margin-bottom:9px;
+  background:#ffffff0b;
+  transition:background .2s,transform .2s;
+}
+.food:hover{background:#ffffff17}
+.foodname{
+  flex:1;
+  min-width:0;
+  overflow-wrap:anywhere;
+  font-size:14px;
+  font-weight:700;
+}
+.food-label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.vote-count{
+  color:#ffdda2;
+  font-size:12px;
+  white-space:nowrap;
+}
+.food button{
+  background:#ffc07d23;
+  color:#ffe1a6;
+  border:1px solid #ffce8275;
+  font-size:12px;
+  padding:10px;
+  white-space:nowrap;
+}
+.food button.voted{
+  background:#65d6ac28;
+  color:#a7ffda;
+  border-color:#65d6ac70;
+}
+.food .remove{
+  color:#ffb2c0;
+  border-color:#ff9ca660;
+  background:#ff6b7c15;
+}
+.bar{
+  height:7px;
+  background:#ffffff1b;
+  border-radius:99px;
+  margin-top:9px;
+  overflow:hidden;
+}
+.bar i{
+  display:block;
+  height:100%;
+  background:linear-gradient(90deg,#ffe078,#ff8ca9);
+  border-radius:99px;
+  transition:width .35s ease;
+}
+#summary{
+  margin-bottom:0;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#ffffff0d;
+}
+.add{
+  display:flex;
+  gap:9px;
+}
+input{
+  background:#0d1229a8;
+  border:1px solid #b3a4da60;
+  border-radius:14px;
+  padding:14px;
+  color:white;
+  width:100%;
+  min-width:0;
+  font:inherit;
+  outline:none;
+}
+input:focus{
+  border-color:#ffce83;
+  box-shadow:0 0 0 3px #ffce8322;
+}
+input::placeholder{color:#9997b2}
+#add{min-width:72px}
+#admin{
+  display:none;
+  border-color:#f9c36d70;
+  background:linear-gradient(140deg,#ffd27a20,#f38bb41b);
+}
+#admin button{
+  margin-top:10px;
+  background:#823e68;
+  color:#fff;
+  border:1px solid #ffb2c5;
+}
+#history{
+  font-size:13px;
+  line-height:2;
+  color:#e3dcf0;
+}
+.history-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 0;
+  border-bottom:1px solid #ffffff16;
+}
+.history-number{
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:#ffcb7b22;
+  color:#ffe0a2;
+  font-weight:900;
+  flex-shrink:0;
+}
+#msg{
+  min-height:20px;
+  margin-top:20px;
+  text-align:center;
+  color:#e6dbf0;
+  font-size:12px;
+}
+footer{
+  text-align:center;
+  margin-top:26px;
+  color:#bcb5d2;
+  font-size:12px;
+}
+@media(max-width:700px){
+  main{padding:12px 12px 28px}
+  header{
+    padding:12px 13px;
+    border-radius:18px;
+  }
+  .hero{padding:29px 0 24px}
+  .grid{
+    grid-template-columns:1fr;
+    gap:15px;
+  }
+  .wheel-card{position:static}
+  .card{
+    padding:17px;
+    border-radius:21px;
+  }
+  .pin{font-size:33px}
+  .food{padding:10px}
+}
+@media(max-width:380px){
+  .food{gap:6px}
+  .food button{
+    font-size:11px;
+    padding:9px 7px;
+  }
+  .logo{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){
+  button,.bar i,.food{transition:none}
+  #spin:not(:disabled){animation:none}
+}
 </style>
 </head>
 <body>
 <main>
 <header>
-<div class="logo">🍽️ Yemek Çarkı</div>
-<div style="text-align:right">
-<div id="status">Bağlanıyor...</div>
-<button class="primary small" id="login">Google ile giriş</button>
-<div id="uid"></div>
-</div>
+  <div class="logo">🍽️ Yemek Çarkı</div>
+  <div class="login-area">
+    <div id="status">Bağlanıyor...</div>
+    <button class="primary small" id="login">Google ile giriş</button>
+    <div id="uid"></div>
+  </div>
 </header>
 
-<h1>Bugün <span>ne yesek?</span></h1>
-<p class="sub">Yemeğini öner, oyunu ver, kararı birlikte al!</p>
+<div class="hero">
+  <div class="hero-badge">✨ HER GÜN YENİ BİR LEZZET</div>
+  <h1>Bugün <span>ne yesek?</span></h1>
+  <p class="sub">Yemeğini öner, oyunu ver, çark karar versin!</p>
+</div>
 
 <div class="grid">
-<section class="card">
-<div class="wheelbox">
-<div class="pin">▼</div>
-<canvas id="wheel" width="700" height="700"></canvas>
-</div>
-<button id="spin" class="primary full">✦ ÇARKI ÇEVİR</button>
-<div class="result">
-<div class="muted">BUGÜNÜN SEÇİMİ</div>
-<strong id="result">Henüz seçilmedi</strong>
-</div>
-</section>
+  <section class="card wheel-card">
+    <div class="wheel-title">
+      <h2>🎡 Şans Çarkı</h2>
+      <span class="tag">🎲 Sürpriz seçim</span>
+    </div>
+    <div class="wheelbox">
+      <div class="pin">▼</div>
+      <canvas id="wheel" width="700" height="700"></canvas>
+    </div>
+    <button id="spin" class="primary full">✦ ÇARKI ÇEVİR</button>
+    <div class="result" id="resultBox">
+      <div class="eyebrow">🏆 BUGÜNÜN SEÇİMİ</div>
+      <strong id="result">Henüz seçilmedi</strong>
+    </div>
+  </section>
 
-<aside>
-<section class="card">
-<h2>🗳️ Günün Oylaması</h2>
-<div id="date" class="muted"></div>
-<div id="foods">Yükleniyor...</div>
-<p id="summary" class="muted"></p>
-</section>
+  <aside>
+    <section class="card">
+      <div class="section-heading">
+        <h2>🗳️ Günün Oylaması</h2>
+        <span class="tag">CANLI</span>
+      </div>
+      <div id="date" class="muted"></div>
+      <div id="foods">Yükleniyor...</div>
+      <p id="summary" class="muted"></p>
+    </section>
 
-<section class="card">
-<h2>🍴 Yemek Öner</h2>
-<div class="add">
-<input id="foodInput" maxlength="30" placeholder="Yemek adı">
-<button id="add" class="primary">Ekle</button>
+    <section class="card">
+      <h2>🍕 Yemek Öner</h2>
+      <div class="add">
+        <input id="foodInput" maxlength="30"
+          placeholder="Aklında ne var?">
+        <button id="add" class="primary">Ekle</button>
+      </div>
+      <p class="muted">✨ Önerin herkesin listesine eklenir.</p>
+    </section>
+
+    <section class="card" id="admin">
+      <h2>🛡️ Yönetici Paneli</h2>
+      <p class="muted">
+        Yemekleri silebilir ve günlük oyları sıfırlayabilirsin.
+      </p>
+      <button id="reset" class="full">
+        🔄 Günün Oylarını Sıfırla
+      </button>
+    </section>
+
+    <section class="card">
+      <h2>🕘 Son Seçimler</h2>
+      <div id="history">Henüz seçim yapılmadı.</div>
+    </section>
+  </aside>
 </div>
-<p class="muted">Öneriler herkesin listesinde görünür.</p>
-</section>
 
-<section class="card" id="admin">
-<h2>🛡️ Yönetici Paneli</h2>
-<p class="muted">Yemekleri silebilir ve günlük oyları sıfırlayabilirsin.</p>
-<button id="reset" class="full">Günün Oylarını Sıfırla</button>
-</section>
-
-<section class="card">
-<h2>🕘 Son Seçimler</h2>
-<div id="history">Henüz seçim yapılmadı.</div>
-</section>
-</aside>
-</div>
 <p id="msg" role="status"></p>
 <footer>Afiyet olsun ❤️ • Ortak Yemek Çarkı</footer>
 </main>
 
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,signInAnonymously,signInWithPopup,GoogleAuthProvider} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import {getFirestore,doc,collection,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit,getDocs,writeBatch} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+
+import {
+  getAuth,onAuthStateChanged,
+  signInAnonymously,signInWithPopup,GoogleAuthProvider
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+import {
+  getFirestore,doc,collection,onSnapshot,
+  runTransaction,serverTimestamp,query,
+  orderBy,limit,getDocs,writeBatch
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const config={
-apiKey:"AIzaSyB_zZfGiWc9VWZGTVjrPd8sWbLqGvc-HUo",
-authDomain:"yemek-carki-745fa.firebaseapp.com",
-projectId:"yemek-carki-745fa",
-storageBucket:"yemek-carki-745fa.firebasestorage.app",
-messagingSenderId:"584547323621",
-appId:"1:584547323621:web:55c378c10c3ce65fc30e0c"
+  apiKey:"AIzaSyB_zZfGiWc9VWZGTVjrPd8sWbLqGvc-HUo",
+  authDomain:"yemek-carki-745fa.firebaseapp.com",
+  projectId:"yemek-carki-745fa",
+  storageBucket:"yemek-carki-745fa.firebasestorage.app",
+  messagingSenderId:"584547323621",
+  appId:"1:584547323621:web:55c378c10c3ce65fc30e0c"
 };
 
-// Yönetici UID: Ekran görüntüsündeki hesap
 const ADMIN_UID="RQoT8LjzGnbmug1eSKBbw8dIztF3";
 
 const app=initializeApp(config);
@@ -130,21 +526,22 @@ const db=getFirestore(app);
 const $=id=>document.getElementById(id);
 
 const defaults=[
-"Lahmacun","Döner","Mantı","Köfte","Pide",
-"Tavuk Pilav","Kuru Fasulye","İskender",
-"Makarna","Çorba"
+  "Lahmacun","Döner","Mantı","Köfte","Pide",
+  "Tavuk Pilav","Kuru Fasulye","İskender",
+  "Makarna","Çorba"
 ];
 
 const colors=[
-"#fa8778","#f6b76b","#5b9ba9",
-"#8275b9","#55a28d","#c57c9b"
+  "#ff778f","#ffb45f","#6bc9b6",
+  "#8f87ef","#f18ac0","#67b7f0",
+  "#ffda72","#a4c97c","#d79af4","#ff9574"
 ];
 
 const day=new Intl.DateTimeFormat("en-CA",{
-timeZone:"Europe/Istanbul",
-year:"numeric",
-month:"2-digit",
-day:"2-digit"
+  timeZone:"Europe/Istanbul",
+  year:"numeric",
+  month:"2-digit",
+  day:"2-digit"
 }).format(new Date());
 
 const dayRef=doc(db,"days",day);
@@ -166,454 +563,505 @@ const ctx=canvas.getContext("2d");
 const TAU=Math.PI*2;
 
 $("date").textContent=new Intl.DateTimeFormat("tr-TR",{
-dateStyle:"full",
-timeZone:"Europe/Istanbul"
+  dateStyle:"full",
+  timeZone:"Europe/Istanbul"
 }).format(new Date());
 
 function isAdmin(){
-return Boolean(user && user.uid===ADMIN_UID);
+  return Boolean(user&&user.uid===ADMIN_UID);
 }
 
 function message(s){
-$("msg").textContent=s;
+  $("msg").textContent=s;
 }
 
 function draw(){
-const n=foods.length||1;
-const c=350,r=333;
+  const n=foods.length||1;
+  const c=350,r=328;
 
-ctx.clearRect(0,0,700,700);
-ctx.beginPath();
-ctx.arc(c,c,345,0,TAU);
-ctx.fillStyle="#111526";
-ctx.fill();
+  ctx.clearRect(0,0,700,700);
 
-foods.forEach((name,i)=>{
-const a=rotation+i*TAU/n;
-const step=TAU/n;
+  // Outer glow ring
+  ctx.beginPath();
+  ctx.arc(c,c,346,0,TAU);
+  ctx.fillStyle="#ffd78a";
+  ctx.fill();
 
-ctx.beginPath();
-ctx.moveTo(c,c);
-ctx.arc(c,c,r,a,a+step);
-ctx.closePath();
-ctx.fillStyle=colors[i%colors.length];
-ctx.fill();
-ctx.strokeStyle="#ffffff66";
-ctx.lineWidth=2;
-ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(c,c,338,0,TAU);
+  ctx.fillStyle="#392554";
+  ctx.fill();
 
-ctx.save();
-ctx.translate(c,c);
-ctx.rotate(a+step/2);
-ctx.fillStyle="white";
-ctx.textAlign="right";
-ctx.textBaseline="middle";
-ctx.font=`bold ${n>15?17:22}px system-ui`;
-ctx.fillText(name,310,0,215);
-ctx.restore();
-});
+  foods.forEach((name,i)=>{
+    const a=rotation+i*TAU/n;
+    const step=TAU/n;
 
-ctx.beginPath();
-ctx.arc(c,c,35,0,TAU);
-ctx.fillStyle="#fff";
-ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(c,c);
+    ctx.arc(c,c,r,a,a+step);
+    ctx.closePath();
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.fill();
+    ctx.strokeStyle="#ffffff99";
+    ctx.lineWidth=2;
+    ctx.stroke();
 
-ctx.beginPath();
-ctx.arc(c,c,23,0,TAU);
-ctx.fillStyle="#f29a79";
-ctx.fill();
+    ctx.save();
+    ctx.translate(c,c);
+    ctx.rotate(a+step/2);
+    ctx.fillStyle="#fff";
+    ctx.textAlign="right";
+    ctx.textBaseline="middle";
+    ctx.shadowColor="#0008";
+    ctx.shadowBlur=5;
+    ctx.font=`800 ${n>20?15:n>15?17:22}px system-ui`;
+    ctx.fillText(name,305,0,215);
+    ctx.restore();
+  });
+
+  // Decorative ring
+  ctx.beginPath();
+  ctx.arc(c,c,328,0,TAU);
+  ctx.strokeStyle="#ffffff88";
+  ctx.lineWidth=3;
+  ctx.stroke();
+
+  // Center
+  ctx.shadowColor="#0006";
+  ctx.shadowBlur=15;
+  ctx.beginPath();
+  ctx.arc(c,c,43,0,TAU);
+  ctx.fillStyle="#fff";
+  ctx.fill();
+  ctx.shadowBlur=0;
+
+  ctx.beginPath();
+  ctx.arc(c,c,32,0,TAU);
+  const gradient=ctx.createLinearGradient(315,315,385,385);
+  gradient.addColorStop(0,"#ffdf76");
+  gradient.addColorStop(1,"#ff789f");
+  ctx.fillStyle=gradient;
+  ctx.fill();
+
+  ctx.font="30px system-ui";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillText("🍽️",c,c+1);
 }
 
 function render(){
-draw();
+  draw();
 
-const total=Object.values(votes).reduce((a,b)=>a+b,0);
-$("foods").replaceChildren();
+  const total=Object.values(votes).reduce((a,b)=>a+b,0);
+  $("foods").replaceChildren();
 
-foods.forEach(name=>{
-const count=votes[name]||0;
-const row=document.createElement("div");
-const info=document.createElement("div");
-const label=document.createElement("div");
-const bar=document.createElement("div");
-const fill=document.createElement("i");
-const button=document.createElement("button");
+  foods.forEach(name=>{
+    const count=votes[name]||0;
+    const row=document.createElement("div");
+    const info=document.createElement("div");
+    const label=document.createElement("div");
+    const nameEl=document.createElement("span");
+    const countEl=document.createElement("span");
+    const bar=document.createElement("div");
+    const fill=document.createElement("i");
+    const button=document.createElement("button");
 
-row.className="food";
-info.className="foodname";
-label.textContent=`${name} · ${count} oy`;
-bar.className="bar";
-fill.style.width=(total?count/total*100:0)+"%";
+    row.className="food";
+    info.className="foodname";
+    label.className="food-label";
+    countEl.className="vote-count";
 
-bar.append(fill);
-info.append(label,bar);
+    nameEl.textContent=name;
+    countEl.textContent=count+" oy";
 
-button.textContent=myVote===name?"✓ Oyum":"Oy ver";
-button.disabled=!user||!!myVote||busy||!ready;
-button.onclick=()=>castVote(name);
-row.append(info,button);
+    label.append(nameEl,countEl);
+    bar.className="bar";
+    fill.style.width=(total?count/total*100:0)+"%";
+    bar.append(fill);
+    info.append(label,bar);
 
-if(isAdmin()){
-const del=document.createElement("button");
-del.className="remove";
-del.textContent="Sil";
-del.disabled=busy||!ready;
-del.onclick=()=>removeFood(name);
-row.append(del);
-}
+    button.textContent=myVote===name?"✓ Oyum":"Oy ver";
+    if(myVote===name)button.className="voted";
+    button.disabled=!user||!!myVote||busy||!ready;
+    button.onclick=()=>castVote(name);
 
-$("foods").append(row);
-});
+    row.append(info,button);
 
-$("summary").textContent=
-`${total} toplam oy`+
-(myVote?` · Senin oyun: ${myVote}`:"");
+    if(isAdmin()){
+      const del=document.createElement("button");
+      del.className="remove";
+      del.textContent="Sil";
+      del.disabled=busy||!ready;
+      del.onclick=()=>removeFood(name);
+      row.append(del);
+    }
 
-$("spin").disabled=
-!isAdmin()||foods.length<2||busy||!ready;
+    $("foods").append(row);
+  });
 
-$("spin").textContent=isAdmin()
-?"✦ ÇARKI ÇEVİR"
-:"🔒 Çarkı yönetici çevirir";
+  $("summary").textContent=
+    `🗳️ ${total} toplam oy`+
+    (myVote?` · Senin oyun: ${myVote}`:"");
 
-$("add").disabled=!user||busy||!ready;
-$("reset").disabled=busy||!ready;
-$("admin").style.display=isAdmin()?"block":"none";
+  $("spin").disabled=
+    !isAdmin()||foods.length<2||busy||!ready;
+
+  $("spin").textContent=isAdmin()
+    ?"✦ ÇARKI ÇEVİR"
+    :"🔒 Çarkı yönetici çevirir";
+
+  $("add").disabled=!user||busy||!ready;
+  $("reset").disabled=busy||!ready;
+  $("admin").style.display=isAdmin()?"block":"none";
 }
 
 async function initializeDay(){
-await runTransaction(db,async tx=>{
-const snap=await tx.get(dayRef);
-
-if(!snap.exists()){
-tx.set(dayRef,{
-foods:defaults,
-votes:{},
-result:null,
-createdAt:serverTimestamp()
-});
-}
-});
+  await runTransaction(db,async tx=>{
+    const snap=await tx.get(dayRef);
+    if(!snap.exists()){
+      tx.set(dayRef,{
+        foods:defaults,
+        votes:{},
+        result:null,
+        createdAt:serverTimestamp()
+      });
+    }
+  });
 }
 
 function stopWatch(){
-unsubs.forEach(fn=>fn());
-unsubs=[];
+  unsubs.forEach(fn=>fn());
+  unsubs=[];
 }
 
 function watch(){
-stopWatch();
+  stopWatch();
 
-unsubs.push(onSnapshot(dayRef,s=>{
-const d=s.data()||{};
-foods=d.foods||[];
-$("result").textContent=d.result||"Henüz seçilmedi";
-render();
-},e=>message("Liste hatası: "+e.message)));
+  unsubs.push(onSnapshot(dayRef,s=>{
+    const d=s.data()||{};
+    foods=d.foods||[];
+    $("result").textContent=d.result||"Henüz seçilmedi";
+    render();
+  },e=>message("Liste hatası: "+e.message)));
 
-unsubs.push(onSnapshot(ballotsRef,s=>{
-ballots=s.docs.map(d=>({id:d.id,...d.data()}));
-votes={};
+  unsubs.push(onSnapshot(ballotsRef,s=>{
+    ballots=s.docs.map(d=>({id:d.id,...d.data()}));
+    votes={};
 
-ballots.forEach(b=>{
-if(typeof b.food==="string"){
-votes[b.food]=(votes[b.food]||0)+1;
-}
-});
+    ballots.forEach(b=>{
+      if(typeof b.food==="string"){
+        votes[b.food]=(votes[b.food]||0)+1;
+      }
+    });
 
-myVote=ballots.find(b=>b.id===user?.uid)?.food||null;
-render();
-},e=>message("Oy hatası: "+e.message)));
+    myVote=ballots.find(b=>b.id===user?.uid)?.food||null;
+    render();
+  },e=>message("Oy hatası: "+e.message)));
 
-unsubs.push(onSnapshot(
-query(spinsRef,orderBy("createdAt","desc"),limit(5)),
-s=>{
-$("history").replaceChildren();
+  unsubs.push(onSnapshot(
+    query(spinsRef,orderBy("createdAt","desc"),limit(5)),
+    s=>{
+      $("history").replaceChildren();
 
-if(s.empty){
-$("history").textContent="Henüz seçim yapılmadı.";
-}
+      if(s.empty){
+        $("history").textContent="Henüz seçim yapılmadı.";
+      }
 
-s.docs.forEach((d,i)=>{
-const div=document.createElement("div");
-div.textContent=(i+1)+". "+d.data().food;
-$("history").append(div);
-});
-},
-e=>message("Geçmiş hatası: "+e.message)
-));
+      s.docs.forEach((d,i)=>{
+        const div=document.createElement("div");
+        const number=document.createElement("span");
+        const food=document.createElement("span");
+
+        div.className="history-item";
+        number.className="history-number";
+        number.textContent=i+1;
+        food.textContent=d.data().food;
+
+        div.append(number,food);
+        $("history").append(div);
+      });
+    },
+    e=>message("Geçmiş hatası: "+e.message)
+  ));
 }
 
 $("add").onclick=async()=>{
-const name=$("foodInput").value.trim();
+  const name=$("foodInput").value.trim();
+  if(!name||name.length>30||busy||!ready)return;
 
-if(!name||name.length>30||busy||!ready)return;
+  busy=true;
+  render();
 
-busy=true;
-render();
+  try{
+    await runTransaction(db,async tx=>{
+      const s=await tx.get(dayRef);
+      const list=s.data()?.foods||[];
 
-try{
-await runTransaction(db,async tx=>{
-const s=await tx.get(dayRef);
-const list=s.data()?.foods||[];
+      if(list.length>=30)throw Error("Liste dolu.");
 
-if(list.length>=30)throw Error("Liste dolu.");
+      if(list.some(x=>
+        x.toLocaleLowerCase("tr")===
+        name.toLocaleLowerCase("tr")
+      )){
+        throw Error("Bu yemek zaten var.");
+      }
 
-if(list.some(x=>
-x.toLocaleLowerCase("tr")===
-name.toLocaleLowerCase("tr")
-)){
-throw Error("Bu yemek zaten var.");
-}
+      tx.update(dayRef,{foods:[...list,name]});
+    });
 
-tx.update(dayRef,{foods:[...list,name]});
-});
-
-$("foodInput").value="";
-message("Yemek eklendi.");
-}catch(e){
-message("Ekleme hatası: "+e.message);
-}finally{
-busy=false;
-render();
-}
+    $("foodInput").value="";
+    message("🍕 Yemek listeye eklendi!");
+  }catch(e){
+    message("Ekleme hatası: "+e.message);
+  }finally{
+    busy=false;
+    render();
+  }
 };
 
+$("foodInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter")$("add").click();
+});
+
 async function castVote(food){
-if(!user||myVote||busy||!ready)return;
+  if(!user||myVote||busy||!ready)return;
 
-busy=true;
-render();
+  busy=true;
+  render();
 
-try{
-const ballot=doc(ballotsRef,user.uid);
+  try{
+    const ballot=doc(ballotsRef,user.uid);
 
-await runTransaction(db,async tx=>{
-const b=await tx.get(ballot);
-const s=await tx.get(dayRef);
+    await runTransaction(db,async tx=>{
+      const b=await tx.get(ballot);
+      const s=await tx.get(dayRef);
 
-if(b.exists()){
-throw Error("Bugün oy kullandın.");
-}
+      if(b.exists()){
+        throw Error("Bugün oy kullandın.");
+      }
 
-if(!s.data()?.foods?.includes(food)){
-throw Error("Yemek bulunamadı.");
-}
+      if(!s.data()?.foods?.includes(food)){
+        throw Error("Yemek bulunamadı.");
+      }
 
-tx.set(ballot,{
-food,
-createdAt:serverTimestamp()
-});
-});
+      tx.set(ballot,{
+        food,
+        createdAt:serverTimestamp()
+      });
+    });
 
-message("Oyun kaydedildi!");
-}catch(e){
-message("Oy hatası: "+e.message);
-}finally{
-busy=false;
-render();
-}
+    message("🎉 Oyun kaydedildi!");
+  }catch(e){
+    message("Oy hatası: "+e.message);
+  }finally{
+    busy=false;
+    render();
+  }
 }
 
 async function removeFood(name){
-if(
-!isAdmin()||busy||!ready||
-!confirm(`“${name}” listeden silinsin mi?`)
-)return;
+  if(
+    !isAdmin()||busy||!ready||
+    !confirm(`“${name}” listeden silinsin mi?`)
+  )return;
 
-busy=true;
-render();
+  busy=true;
+  render();
 
-try{
-await runTransaction(db,async tx=>{
-const s=await tx.get(dayRef);
-const list=s.data()?.foods||[];
+  try{
+    await runTransaction(db,async tx=>{
+      const s=await tx.get(dayRef);
+      const list=s.data()?.foods||[];
 
-if(list.length<=2){
-throw Error("Listede en az 2 yemek kalmalı.");
-}
+      if(list.length<=2){
+        throw Error("Listede en az 2 yemek kalmalı.");
+      }
 
-if(!list.includes(name)){
-throw Error("Yemek bulunamadı.");
-}
+      if(!list.includes(name)){
+        throw Error("Yemek bulunamadı.");
+      }
 
-tx.update(dayRef,{
-foods:list.filter(x=>x!==name)
-});
-});
+      tx.update(dayRef,{
+        foods:list.filter(x=>x!==name)
+      });
+    });
 
-message("Yemek silindi. Eski oy kayıtları korunur.");
-}catch(e){
-message("Silme hatası: "+e.message);
-}finally{
-busy=false;
-render();
-}
+    message("Yemek silindi. Eski oy kayıtları korunur.");
+  }catch(e){
+    message("Silme hatası: "+e.message);
+  }finally{
+    busy=false;
+    render();
+  }
 }
 
 $("reset").onclick=async()=>{
-if(
-!isAdmin()||busy||!ready||
-!confirm("Bugünkü TÜM oylar silinsin mi? Bu işlem geri alınamaz.")
-)return;
+  if(
+    !isAdmin()||busy||!ready||
+    !confirm("Bugünkü TÜM oylar silinsin mi? Bu işlem geri alınamaz.")
+  )return;
 
-busy=true;
-render();
+  busy=true;
+  render();
 
-try{
-let count=0;
+  try{
+    let count=0;
 
-while(true){
-const snap=await getDocs(
-query(ballotsRef,limit(400))
-);
+    while(true){
+      const snap=await getDocs(
+        query(ballotsRef,limit(400))
+      );
 
-if(snap.empty)break;
+      if(snap.empty)break;
 
-const batch=writeBatch(db);
+      const batch=writeBatch(db);
 
-snap.docs.forEach(d=>{
-batch.delete(d.ref);
-});
+      snap.docs.forEach(d=>{
+        batch.delete(d.ref);
+      });
 
-await batch.commit();
-count+=snap.size;
-}
+      await batch.commit();
+      count+=snap.size;
+    }
 
-message(`${count} oy silindi. Herkes yeniden oy verebilir.`);
-}catch(e){
-message("Sıfırlama hatası: "+e.message);
-}finally{
-busy=false;
-render();
-}
+    message(`🔄 ${count} oy silindi. Herkes yeniden oy verebilir.`);
+  }catch(e){
+    message("Sıfırlama hatası: "+e.message);
+  }finally{
+    busy=false;
+    render();
+  }
 };
 
 $("spin").onclick=async()=>{
-if(!isAdmin()||busy||foods.length<2||!ready)return;
+  if(!isAdmin()||busy||foods.length<2||!ready)return;
 
-busy=true;
-render();
+  busy=true;
+  render();
 
-const start=rotation;
-const distance=(6+Math.random()*3)*TAU+
-Math.random()*TAU;
+  const start=rotation;
+  const distance=(6+Math.random()*3)*TAU+
+    Math.random()*TAU;
 
-await new Promise(resolve=>{
-let t0=null;
+  await new Promise(resolve=>{
+    let t0=null;
 
-function frame(t){
-if(t0===null)t0=t;
+    function frame(t){
+      if(t0===null)t0=t;
+      const k=Math.min((t-t0)/4000,1);
 
-const k=Math.min((t-t0)/4000,1);
+      rotation=start+
+        distance*(1-Math.pow(1-k,4));
 
-rotation=start+
-distance*(1-Math.pow(1-k,4));
+      draw();
 
-draw();
+      if(k<1){
+        requestAnimationFrame(frame);
+      }else{
+        resolve();
+      }
+    }
 
-if(k<1){
-requestAnimationFrame(frame);
-}else{
-resolve();
-}
-}
+    requestAnimationFrame(frame);
+  });
 
-requestAnimationFrame(frame);
-});
+  const step=TAU/foods.length;
+  const angle=((-Math.PI/2-rotation)%TAU+TAU)%TAU;
+  const selected=foods[Math.floor(angle/step)%foods.length];
 
-const step=TAU/foods.length;
-const angle=((-Math.PI/2-rotation)%TAU+TAU)%TAU;
-const selected=foods[Math.floor(angle/step)%foods.length];
+  try{
+    await runTransaction(db,async tx=>{
+      const s=await tx.get(dayRef);
 
-try{
-await runTransaction(db,async tx=>{
-const s=await tx.get(dayRef);
+      if(!s.data()?.foods?.includes(selected)){
+        throw Error("Liste değişti. Tekrar çevir.");
+      }
 
-if(!s.data()?.foods?.includes(selected)){
-throw Error("Liste değişti. Tekrar çevir.");
-}
+      const ref=doc(spinsRef);
 
-const ref=doc(spinsRef);
+      tx.update(dayRef,{
+        result:selected,
+        updatedAt:serverTimestamp()
+      });
 
-tx.update(dayRef,{
-result:selected,
-updatedAt:serverTimestamp()
-});
+      tx.set(ref,{
+        food:selected,
+        by:user.uid,
+        createdAt:serverTimestamp()
+      });
+    });
 
-tx.set(ref,{
-food:selected,
-by:user.uid,
-createdAt:serverTimestamp()
-});
-});
+    const resultBox=$("resultBox");
+    resultBox.classList.remove("celebrate");
+    void resultBox.offsetWidth;
+    resultBox.classList.add("celebrate");
 
-message("Ortak seçim: "+selected);
-}catch(e){
-message("Çark hatası: "+e.message);
-}finally{
-busy=false;
-render();
-}
+    message("🏆 Ortak seçim: "+selected+"! Afiyet olsun!");
+  }catch(e){
+    message("Çark hatası: "+e.message);
+  }finally{
+    busy=false;
+    render();
+  }
 };
 
 $("login").onclick=async()=>{
-const button=$("login");
-button.disabled=true;
-button.textContent="Giriş yapılıyor...";
+  const button=$("login");
+  button.disabled=true;
+  button.textContent="Giriş yapılıyor...";
 
-try{
-message("Google hesabı açılıyor...");
-await signInWithPopup(auth,new GoogleAuthProvider());
-message("Google hesabıyla giriş başarılı!");
-}catch(e){
-message("Google giriş hatası: "+e.code+" - "+e.message);
-}finally{
-button.disabled=false;
-button.textContent="Google ile giriş";
-}
+  try{
+    message("Google hesabı açılıyor...");
+    await signInWithPopup(auth,new GoogleAuthProvider());
+    message("Google hesabıyla giriş başarılı!");
+  }catch(e){
+    message("Google giriş hatası: "+e.code+" - "+e.message);
+  }finally{
+    button.disabled=false;
+    button.textContent="Google ile giriş";
+  }
 };
 
 onAuthStateChanged(auth,async u=>{
-stopWatch();
-ready=false;
-user=u;
-myVote=null;
-ballots=[];
-votes={};
+  stopWatch();
+  ready=false;
+  user=u;
+  myVote=null;
+  ballots=[];
+  votes={};
 
-if(!u){
-$("status").textContent="Misafir girişi yapılıyor...";
+  if(!u){
+    $("status").textContent="Misafir girişi yapılıyor...";
 
-try{
-await signInAnonymously(auth);
-}catch(e){
-message("Giriş hatası: "+e.message);
-}
-return;
-}
+    try{
+      await signInAnonymously(auth);
+    }catch(e){
+      message("Giriş hatası: "+e.message);
+    }
+    return;
+  }
 
-$("status").textContent=u.isAnonymous
-?"🟢 Misafir bağlı"
-:isAdmin()
-?"🛡️ Yönetici bağlı"
-:"🟢 Google bağlı";
+  $("status").textContent=u.isAnonymous
+    ?"🟢 Misafir bağlı"
+    :isAdmin()
+    ?"🛡️ Yönetici bağlı"
+    :"🟢 Google bağlı";
 
-$("uid").textContent=u.isAnonymous?"":"UID: "+u.uid;
+  $("uid").textContent=u.isAnonymous?"":"UID: "+u.uid;
 
-$("login").style.display=u.isAnonymous
-?"inline-block":"none";
+  $("login").style.display=u.isAnonymous
+    ?"inline-block":"none";
 
-try{
-await initializeDay();
-ready=true;
-watch();
-message("Bağlantı hazır.");
-}catch(e){
-message("Firebase erişim hatası: "+e.message);
-}
+  try{
+    await initializeDay();
+    ready=true;
+    watch();
+    message("✨ Bağlantı hazır. Afiyet olsun!");
+  }catch(e){
+    message("Firebase erişim hatası: "+e.message);
+  }
 
-render();
+  render();
 });
 
 draw();
