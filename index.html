@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -100,7 +99,7 @@ footer{text-align:center;margin-top:25px;color:#9399b0;font-size:12px}
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,signInAnonymously,signInWithRedirect,getRedirectResult,GoogleAuthProvider} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {getAuth,onAuthStateChanged,signInAnonymously,signInWithPopup,GoogleAuthProvider} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {getFirestore,doc,collection,onSnapshot,runTransaction,serverTimestamp,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const config={
@@ -127,6 +126,7 @@ const TAU=Math.PI*2;
 $("date").textContent=new Intl.DateTimeFormat("tr-TR",{dateStyle:"full",timeZone:"Europe/Istanbul"}).format(new Date());
 
 function message(s){$("msg").textContent=s}
+
 function draw(){
 const n=foods.length||1,c=350,r=333;
 ctx.clearRect(0,0,700,700);
@@ -192,9 +192,11 @@ votes=d.votes||{};
 $("result").textContent=d.result||"Henüz seçilmedi";
 render();
 },e=>message("Veri hatası: "+e.message)));
+
 listeners.push(onSnapshot(doc(db,"days",day,"ballots",user.uid),s=>{
 myVote=s.exists()?s.data().food:null;render();
 },e=>message("Oy hatası: "+e.message)));
+
 listeners.push(onSnapshot(query(collection(db,"days",day,"spins"),orderBy("createdAt","desc"),limit(5)),s=>{
 $("history").replaceChildren();
 if(s.empty)$("history").textContent="Henüz seçim yapılmadı.";
@@ -276,13 +278,27 @@ message("Ortak seçim: "+selected);
 finally{busy=false;render()}
 };
 
+// GOOGLE GİRİŞİ - GÜNCELLENDİ
 $("login").onclick=async()=>{
-try{await signInWithRedirect(auth,new GoogleAuthProvider())}
-catch(e){message(e.message)}
+const button=$("login");
+button.disabled=true;
+button.textContent="Giriş yapılıyor...";
+try{
+message("Google hesabı açılıyor...");
+const provider=new GoogleAuthProvider();
+await signInWithPopup(auth,provider);
+message("Google hesabıyla giriş başarılı!");
+}catch(e){
+message("Google giriş hatası: "+e.code+" - "+e.message);
+}finally{
+button.disabled=false;
+button.textContent="Google ile giriş";
+}
 };
 
 onAuthStateChanged(auth,async u=>{
 if(!u){
+user=null;
 $("status").textContent="Misafir girişi yapılıyor...";
 try{await signInAnonymously(auth)}
 catch(e){message("Giriş hatası: "+e.message)}
@@ -292,10 +308,15 @@ user=u;myVote=null;
 $("status").textContent=u.isAnonymous?"🟢 Misafir bağlı":"🟢 Google bağlı";
 $("uid").textContent=u.isAnonymous?"":"UID: "+u.uid;
 $("login").style.display=u.isAnonymous?"inline-block":"none";
-try{await initializeDay();watch();message("Bağlantı hazır.")}
-catch(e){message("Firebase erişim hatası: "+e.message)}
+try{
+await initializeDay();
+watch();
+message("Bağlantı hazır.");
+}catch(e){
+message("Firebase erişim hatası: "+e.message);
+}
 });
-getRedirectResult(auth).catch(e=>message(e.message));
+
 draw();
 </script>
 </body>
