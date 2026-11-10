@@ -169,7 +169,8 @@ dateStyle:"full",
 timeZone:"Europe/Istanbul"
 }).format(new Date());
 
-const isAdmin=()=>user?.uid===ADMIN_UID&&!user.isAnonymous;
+
+const isAdmin=()=>user !== null && user.uid === ADMIN_UID;
 
 function message(s){
 $("msg").textContent=s;
