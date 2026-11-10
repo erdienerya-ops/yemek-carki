@@ -21,7 +21,7 @@ canvas{width:100%;display:block}
 .pin{position:absolute;top:0;left:50%;transform:translateX(-50%);color:#fff;font-size:30px;z-index:2}
 button{cursor:pointer;font:inherit;border:0;border-radius:12px;padding:12px;font-weight:700}
 .primary{background:linear-gradient(110deg,#ffba74,#ff7485);color:#241828}
-.primary:disabled,button:disabled{opacity:.45;cursor:not-allowed}
+button:disabled{opacity:.45;cursor:not-allowed}
 .full{width:100%}
 .small{font-size:12px;padding:9px}
 h2{font-size:18px;margin:0 0 15px}
@@ -93,7 +93,7 @@ footer{text-align:center;margin-top:25px;color:#9399b0;font-size:12px}
 
 <section class="card" id="admin">
 <h2>🛡️ Yönetici Paneli</h2>
-<p class="muted">Yemekleri listeden silebilir ve günlük oyları sıfırlayabilirsin.</p>
+<p class="muted">Yemekleri silebilir ve günlük oyları sıfırlayabilirsin.</p>
 <button id="reset" class="full">Günün Oylarını Sıfırla</button>
 </section>
 
@@ -121,6 +121,7 @@ messagingSenderId:"584547323621",
 appId:"1:584547323621:web:55c378c10c3ce65fc30e0c"
 };
 
+// Yönetici UID: Ekran görüntüsündeki hesap
 const ADMIN_UID="RQoT8LjzGnbmug1eSKBbw8dlztF3";
 
 const app=initializeApp(config);
@@ -169,8 +170,9 @@ dateStyle:"full",
 timeZone:"Europe/Istanbul"
 }).format(new Date());
 
-
-const isAdmin=()=>user !== null && user.uid === ADMIN_UID;
+function isAdmin(){
+return Boolean(user && user.uid===ADMIN_UID);
+}
 
 function message(s){
 $("msg").textContent=s;
