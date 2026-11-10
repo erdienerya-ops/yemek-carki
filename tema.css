@@ -1,0 +1,310 @@
+/* Öğle Yemeği Çarkı — Eğlenceli & Dinamik */
+
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #fff;
+  background: #11152c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 8% 0%, #643c99 0%, transparent 38%),
+    radial-gradient(ellipse at 95% 16%, #a74675 0%, transparent 35%),
+    linear-gradient(145deg, #161935, #101629 80%);
+  background-attachment: fixed;
+}
+
+main {
+  max-width: 1040px;
+  margin: auto;
+  padding: 20px 16px 36px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff12;
+  border: 1px solid #ffffff24;
+  border-radius: 22px;
+  padding: 15px 19px;
+  backdrop-filter: blur(14px);
+}
+
+.logo {
+  font-weight: 900;
+  font-size: clamp(17px, 4vw, 23px);
+  letter-spacing: -.5px;
+}
+
+h1 {
+  text-align: center;
+  font-size: clamp(36px, 8vw, 66px);
+  letter-spacing: -2px;
+  line-height: 1.08;
+  margin: 37px 0 12px;
+  text-shadow: 0 5px 30px #0003;
+}
+
+h1 span {
+  background: linear-gradient(100deg, #ffdf7a, #ff8ca5, #d8b4ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.sub {
+  text-align: center;
+  color: #e1d8ef;
+  margin: 0 0 30px;
+  font-size: clamp(14px, 3vw, 17px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.card {
+  background: linear-gradient(145deg, #ffffff1c, #ffffff0c);
+  border: 1px solid #ffffff2a;
+  border-radius: 26px;
+  padding: 22px;
+  box-shadow: 0 15px 45px #05071645;
+  backdrop-filter: blur(12px);
+}
+
+.grid > section.card {
+  position: sticky;
+  top: 18px;
+}
+
+.wheelbox {
+  position: relative;
+  filter: drop-shadow(0 12px 25px #0005);
+}
+
+canvas {
+  width: 100%;
+  display: block;
+  aspect-ratio: 1;
+}
+
+.pin {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffe27e;
+  font-size: 38px;
+  z-index: 2;
+  text-shadow: 0 3px 6px #0009;
+}
+
+button {
+  cursor: pointer;
+  font: inherit;
+  border: 0;
+  border-radius: 15px;
+  padding: 13px;
+  font-weight: 800;
+  transition: transform .16s ease, filter .16s ease;
+}
+
+button:not(:disabled):active {
+  transform: scale(.97);
+}
+
+button:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+.primary {
+  background: linear-gradient(115deg, #ffe47b, #ff9c68 50%, #ff75a0);
+  color: #39213b;
+  box-shadow: 0 7px 22px #ff7a7a42;
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.full { width: 100%; }
+.small { font-size: 12px; padding: 10px 12px; }
+
+#spin {
+  margin-top: 8px;
+  letter-spacing: .6px;
+  font-size: 16px;
+  min-height: 53px;
+}
+
+h2 {
+  font-size: 19px;
+  letter-spacing: -.3px;
+  margin: 0 0 16px;
+}
+
+.result {
+  text-align: center;
+  background: linear-gradient(125deg, #ffbd7040, #e979b72b);
+  border: 1px solid #ffd5a14f;
+  border-radius: 18px;
+  padding: 18px;
+  margin-top: 17px;
+}
+
+.result strong {
+  display: block;
+  font-size: clamp(25px, 5vw, 35px);
+  color: #ffe49b;
+  margin-top: 9px;
+  overflow-wrap: anywhere;
+}
+
+aside {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+input {
+  background: #0d1229a6;
+  border: 1px solid #b3a4da60;
+  border-radius: 14px;
+  padding: 14px;
+  color: white;
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  outline: none;
+}
+
+input:focus {
+  border-color: #ffce83;
+  box-shadow: 0 0 0 3px #ffce8322;
+}
+
+.add { display: flex; gap: 9px; }
+
+.food {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px solid #ffffff1c;
+  padding: 12px 0;
+}
+
+.food:last-child { border-bottom: 0; }
+
+.foodname {
+  flex: 1;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.food button {
+  background: #ffc07d24;
+  color: #ffe1a6;
+  border: 1px solid #ffce8275;
+  font-size: 12px;
+  padding: 10px 11px;
+  white-space: nowrap;
+}
+
+.food .remove {
+  color: #ffb2c0;
+  border-color: #ff9ca660;
+  background: #ff6b7c15;
+}
+
+.bar {
+  height: 7px;
+  background: #ffffff1a;
+  border-radius: 99px;
+  margin-top: 9px;
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffdc72, #ff8c9f);
+  border-radius: 99px;
+  transition: width .3s ease;
+}
+
+.muted {
+  color: #c7c6df;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+#status, #msg {
+  font-size: 12px;
+  color: #e2d9ed;
+}
+
+#msg {
+  min-height: 20px;
+  margin-top: 18px;
+  text-align: center;
+}
+
+#uid {
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  color: #ffe2a2;
+  margin-top: 5px;
+  max-width: 220px;
+}
+
+#history {
+  font-size: 13px;
+  line-height: 2.1;
+  color: #e3dcf0;
+}
+
+#admin {
+  display: none;
+  border-color: #f9c36d70;
+  background: linear-gradient(140deg, #ffd27a20, #f38bb41b);
+}
+
+#admin button {
+  margin-top: 10px;
+  background: #823e68;
+  color: #fff;
+  border: 1px solid #ffb2c5;
+}
+
+footer {
+  text-align: center;
+  margin-top: 27px;
+  color: #bcb5d2;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  main { padding: 12px 12px 28px; }
+  header { padding: 12px 13px; border-radius: 18px; }
+  .grid { grid-template-columns: 1fr; gap: 15px; }
+  .grid > section.card { position: static; }
+  .card { padding: 17px; border-radius: 21px; }
+  h1 { margin-top: 31px; }
+  .sub { margin-bottom: 23px; }
+  .pin { font-size: 33px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button, .bar i { transition: none; }
+}
